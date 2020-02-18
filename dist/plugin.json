@@ -1,6 +1,6 @@
 {
-  "name": "SimpleJson",
-  "id": "grafana-simple-json-datasource",
+  "name": "HealthChecksIO",
+  "id": "healthchecks-io-datasource",
   "type": "datasource",
 
   "partials": {
@@ -11,10 +11,10 @@
   "annotations": true,
 
   "info": {
-    "description": "simple json datasource",
+    "description": "A HealthChecks.io datasource",
     "author": {
-      "name": "Grafana Labs",
-      "url": "https://grafana.com"
+      "name": "James Kirsop",
+      "url": "https://github.com/jameskirsop"
     },
     "logos": {
       "small": "img/simpleJson_logo.svg",
@@ -24,9 +24,19 @@
       {"name": "GitHub", "url": "https://github.com/grafana/simple-json-datasource"},
       {"name": "MIT License", "url": "https://github.com/grafana/simple-json-datasource/blob/master/LICENSE"}
     ],
-    "version": "1.4.0",
-    "updated": "2018-06-20"
+    "version": "0.0.1",
+    "updated": "2020-02-18"
   },
+
+  "routes": [
+    {
+      "path": "checksroute",
+      "url": "https://{{.JsonData.platformURL}}/api/v1/checks/",
+      "headers": [
+        {"name": "x-api-key", "content": "{{.JsonData.apiKey}}"}
+      ]
+    }
+  ],
 
   "dependencies": {
     "grafanaVersion": "3.x.x",

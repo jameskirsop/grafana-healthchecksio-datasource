@@ -6,14 +6,12 @@ export class GenericDatasource {
     this.type = instanceSettings.type;
     this.url = instanceSettings.url;
     this.name = instanceSettings.name;
+    this.id = instanceSettings.id;
     this.q = $q;
     this.backendSrv = backendSrv;
     this.templateSrv = templateSrv;
     this.withCredentials = instanceSettings.withCredentials;
-    this.headers = {'Content-Type': 'application/json'};
-    if (typeof instanceSettings.basicAuth === 'string' && instanceSettings.basicAuth.length > 0) {
-      this.headers['Authorization'] = instanceSettings.basicAuth;
-    }
+    const jsonData = instanceSettings.jsonData;
   }
 
   query(options) {
@@ -31,15 +29,16 @@ export class GenericDatasource {
     }
 
     return this.doRequest({
-      url: this.url + '/query',
-      data: query,
-      method: 'POST'
+      url: 'api/datasources/proxy/${this.id}/checksroute',
+      // headers: this.headers,
+      // data: query,
+      method: 'GET'
     });
   }
 
   testDatasource() {
     return this.doRequest({
-      url: this.url + '/',
+      url: 'api/datasources/proxy/${this.id}/checksroute',
       method: 'GET',
     }).then(response => {
       if (response.status === 200) {
@@ -96,7 +95,7 @@ export class GenericDatasource {
 
   doRequest(options) {
     options.withCredentials = this.withCredentials;
-    options.headers = this.headers;
+    // options.headers = this.headers;
 
     return this.backendSrv.datasourceRequest(options);
   }
