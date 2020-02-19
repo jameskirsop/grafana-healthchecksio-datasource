@@ -16,25 +16,39 @@ export class GenericDatasource {
 
   query(options) {
     var query = this.buildQueryParameters(options);
-    query.targets = query.targets.filter(t => !t.hide);
-
+    // query.targets = query.targets.filter(t => !t.hide);
     if (query.targets.length <= 0) {
       return this.q.when({data: []});
     }
 
-    if (this.templateSrv.getAdhocFilters) {
-      query.adhocFilters = this.templateSrv.getAdhocFilters(this.name);
-    } else {
-      query.adhocFilters = [];
-    }
+    // if (this.templateSrv.getAdhocFilters) {
+    //   query.adhocFilters = this.templateSrv.getAdhocFilters(this.name);
+    // } else {
+    //   query.adhocFilters = [];
+    // }
 
     return this.doRequest({
       url: 'api/datasources/proxy/${this.id}/checksroute',
-      // headers: this.headers,
-      // data: query,
       method: 'GET'
-    });
+    }).then(result => this.mapToTable(result));
   }
+
+  mapToTable(result) {
+    return [{
+      'columns':[{"text":"name"},
+        {"text":"tags"},
+        {"text":"desc"},
+        {"text":"grace"},
+        {"text":"n_pings"},
+        {"text":"status"},
+      ],
+      'rows':_.map(result.data.checks,(o,i)=>{return Object.keys(o).map(function(key){
+          return o[key];
+        });}),
+      'type':'table',
+    }]
+  }
+
 
   testDatasource() {
     return this.doRequest({
@@ -76,21 +90,22 @@ export class GenericDatasource {
     };
 
     return this.doRequest({
-      url: this.url + '/search',
-      data: interpolated,
-      method: 'POST',
+      url: 'api/datasources/proxy/${this.id}/checksroute',
+      method: 'GET',
+      // data: interpolated,
     }).then(this.mapToTextValue);
   }
 
   mapToTextValue(result) {
-    return _.map(result.data, (d, i) => {
-      if (d && d.text && d.value) {
-        return { text: d.text, value: d.value };
-      } else if (_.isObject(d)) {
-        return { text: d, value: i};
-      }
-      return { text: d, value: d };
-    });
+    // return _.map(result.data.checks, (d, i) => {
+    //   if (d && d.text && d.value) {
+    //     return { text: d.text, value: d.value };
+    //   } else if (_.isObject(d)) {
+    //     return { text: d, value: i};
+    //   }
+    //   return { text: d, value: d };
+    // });
+    return result.data.checks
   }
 
   doRequest(options) {

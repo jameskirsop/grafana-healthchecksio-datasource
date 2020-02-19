@@ -26,8 +26,10 @@ var GenericDatasourceQueryCtrl = exports.GenericDatasourceQueryCtrl = function (
     var _this = _possibleConstructorReturn(this, (GenericDatasourceQueryCtrl.__proto__ || Object.getPrototypeOf(GenericDatasourceQueryCtrl)).call(this, $scope, $injector));
 
     _this.scope = $scope;
-    _this.target.target = _this.target.target || 'select metric';
-    _this.target.type = _this.target.type || 'timeserie';
+    _this.target.target = _this.target.target || 'Select Check';
+    // this.target.type = this.target.type || 'timeserie';
+
+    _this.resultFormats = [{ text: 'Table', value: 'table' }];
     return _this;
   }
 
@@ -45,6 +47,11 @@ var GenericDatasourceQueryCtrl = exports.GenericDatasourceQueryCtrl = function (
     key: 'onChangeInternal',
     value: function onChangeInternal() {
       this.panelCtrl.refresh(); // Asks the panel to refresh data.
+    }
+  }, {
+    key: 'getCheckList',
+    value: function getCheckList(objects) {
+      return objects;
     }
   }]);
 
