@@ -12,13 +12,10 @@
         ng-class="{
           'zbx-variable': ctrl.isVariable(ctrl.target.group.filter),
           'zbx-regex': ctrl.isRegex(ctrl.target.group.filter)
-        }">
+        }"
+        >
     </input>
   </div>
-
-    <div class="gf-form" ng-if="ctrl.target.rawQuery">
-      <textarea class="gf-form-input" rows="5" ng-model="ctrl.target.target" spellcheck="false" ng-blur="ctrl.onChangeInternal()" />
-    </div>
 
   </div>
 </query-editor-row>

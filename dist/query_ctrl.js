@@ -50,8 +50,13 @@ var GenericDatasourceQueryCtrl = exports.GenericDatasourceQueryCtrl = function (
     }
   }, {
     key: 'getCheckList',
-    value: function getCheckList(objects) {
-      return objects;
+    value: function getCheckList() {
+      return this.datasource.metricFindQuery('name');
+    }
+  }, {
+    key: 'onTargetBlur',
+    value: function onTargetBlur() {
+      // STUB
     }
   }]);
 

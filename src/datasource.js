@@ -34,19 +34,38 @@ export class GenericDatasource {
   }
 
   mapToTable(result) {
-    return [{
-      'columns':[{"text":"name"},
+    return {'data':[{
+      'columns':[
+        {"text":"name"},
         {"text":"tags"},
-        {"text":"desc"},
-        {"text":"grace"},
-        {"text":"n_pings"},
+        {"text":"Description"},
+        {
+          "text":"Grace",
+          "unit":"s",
+        },
+        {"text":"Total Number of Pings"},
         {"text":"status"},
+        {
+          "text":"Last Ping",
+          "type":"time",
+          "sort":true,
+          "asc":true,
+        },
+        {
+          "text":"Next Ping",
+          "type":"time",
+          "sort":true,
+          "asc":true,
+        },
+        {"text":"unique_key"},
+        {"text":"schedule"},
+        {"text":"tz"},
       ],
       'rows':_.map(result.data.checks,(o,i)=>{return Object.keys(o).map(function(key){
           return o[key];
         });}),
       'type':'table',
-    }]
+    }]}
   }
 
 
@@ -85,27 +104,20 @@ export class GenericDatasource {
   }
 
   metricFindQuery(query) {
-    var interpolated = {
-        target: this.templateSrv.replace(query, null, 'regex')
-    };
+    // var interpolated = {
+    //     target: this.templateSrv.replace(query, null, 'regex')
+    // };
 
     return this.doRequest({
       url: 'api/datasources/proxy/${this.id}/checksroute',
       method: 'GET',
-      // data: interpolated,
-    }).then(this.mapToTextValue);
+    }).then(result => this.mapToTextValue(result));
   }
 
   mapToTextValue(result) {
-    // return _.map(result.data.checks, (d, i) => {
-    //   if (d && d.text && d.value) {
-    //     return { text: d.text, value: d.value };
-    //   } else if (_.isObject(d)) {
-    //     return { text: d, value: i};
-    //   }
-    //   return { text: d, value: d };
-    // });
-    return result.data.checks
+    return _.map(result.data.checks, (o, i) => {
+      return {text: o.name, value: o.unique_key};
+    });
   }
 
   doRequest(options) {

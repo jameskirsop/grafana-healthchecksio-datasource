@@ -24,8 +24,8 @@
       {"name": "GitHub", "url": "https://github.com/grafana/simple-json-datasource"},
       {"name": "MIT License", "url": "https://github.com/grafana/simple-json-datasource/blob/master/LICENSE"}
     ],
-    "version": "0.0.1",
-    "updated": "2020-02-18"
+    "version": "0.0.2",
+    "updated": "2020-02-20"
   },
 
   "routes": [
@@ -39,7 +39,7 @@
   ],
 
   "dependencies": {
-    "grafanaVersion": "3.x.x",
+    "grafanaVersion": "3.6.x",
     "plugins": [ ]
   }
 }

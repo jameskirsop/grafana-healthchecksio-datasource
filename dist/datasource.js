@@ -57,15 +57,28 @@ var GenericDatasource = exports.GenericDatasource = function () {
   }, {
     key: 'mapToTable',
     value: function mapToTable(result) {
-      return [{
-        'columns': [{ "text": "name" }, { "text": "tags" }, { "text": "desc" }, { "text": "grace" }, { "text": "n_pings" }, { "text": "status" }],
-        'rows': _lodash2.default.map(result.data.checks, function (o, i) {
-          return Object.keys(o).map(function (key) {
-            return o[key];
-          });
-        }),
-        'type': 'table'
-      }];
+      return { 'data': [{
+          'columns': [{ "text": "name" }, { "text": "tags" }, { "text": "Description" }, {
+            "text": "Grace",
+            "unit": "s"
+          }, { "text": "Total Number of Pings" }, { "text": "status" }, {
+            "text": "Last Ping",
+            "type": "time",
+            "sort": true,
+            "asc": true
+          }, {
+            "text": "Next Ping",
+            "type": "time",
+            "sort": true,
+            "asc": true
+          }, { "text": "unique_key" }, { "text": "schedule" }, { "text": "tz" }],
+          'rows': _lodash2.default.map(result.data.checks, function (o, i) {
+            return Object.keys(o).map(function (key) {
+              return o[key];
+            });
+          }),
+          'type': 'table'
+        }] };
     }
   }, {
     key: 'testDatasource',
@@ -106,28 +119,25 @@ var GenericDatasource = exports.GenericDatasource = function () {
   }, {
     key: 'metricFindQuery',
     value: function metricFindQuery(query) {
-      var interpolated = {
-        target: this.templateSrv.replace(query, null, 'regex')
-      };
+      var _this2 = this;
+
+      // var interpolated = {
+      //     target: this.templateSrv.replace(query, null, 'regex')
+      // };
 
       return this.doRequest({
         url: 'api/datasources/proxy/${this.id}/checksroute',
         method: 'GET'
-        // data: interpolated,
-      }).then(this.mapToTextValue);
+      }).then(function (result) {
+        return _this2.mapToTextValue(result);
+      });
     }
   }, {
     key: 'mapToTextValue',
     value: function mapToTextValue(result) {
-      // return _.map(result.data.checks, (d, i) => {
-      //   if (d && d.text && d.value) {
-      //     return { text: d.text, value: d.value };
-      //   } else if (_.isObject(d)) {
-      //     return { text: d, value: i};
-      //   }
-      //   return { text: d, value: d };
-      // });
-      return result.data.checks;
+      return _lodash2.default.map(result.data.checks, function (o, i) {
+        return { text: o.name, value: o.unique_key };
+      });
     }
   }, {
     key: 'doRequest',
@@ -140,7 +150,7 @@ var GenericDatasource = exports.GenericDatasource = function () {
   }, {
     key: 'buildQueryParameters',
     value: function buildQueryParameters(options) {
-      var _this2 = this;
+      var _this3 = this;
 
       //remove placeholder targets
       options.targets = _lodash2.default.filter(options.targets, function (target) {
@@ -149,7 +159,7 @@ var GenericDatasource = exports.GenericDatasource = function () {
 
       var targets = _lodash2.default.map(options.targets, function (target) {
         return {
-          target: _this2.templateSrv.replace(target.target, options.scopedVars, 'regex'),
+          target: _this3.templateSrv.replace(target.target, options.scopedVars, 'regex'),
           refId: target.refId,
           hide: target.hide,
           type: target.type || 'timeserie'
@@ -163,11 +173,11 @@ var GenericDatasource = exports.GenericDatasource = function () {
   }, {
     key: 'getTagKeys',
     value: function getTagKeys(options) {
-      var _this3 = this;
+      var _this4 = this;
 
       return new Promise(function (resolve, reject) {
-        _this3.doRequest({
-          url: _this3.url + '/tag-keys',
+        _this4.doRequest({
+          url: _this4.url + '/tag-keys',
           method: 'POST',
           data: options
         }).then(function (result) {
@@ -178,11 +188,11 @@ var GenericDatasource = exports.GenericDatasource = function () {
   }, {
     key: 'getTagValues',
     value: function getTagValues(options) {
-      var _this4 = this;
+      var _this5 = this;
 
       return new Promise(function (resolve, reject) {
-        _this4.doRequest({
-          url: _this4.url + '/tag-values',
+        _this5.doRequest({
+          url: _this5.url + '/tag-values',
           method: 'POST',
           data: options
         }).then(function (result) {
