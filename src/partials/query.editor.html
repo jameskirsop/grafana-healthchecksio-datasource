@@ -1,21 +1,29 @@
-<query-editor-row query-ctrl="ctrl" class="generic-datasource-query-row" has-text-edit-mode="true">
+<query-editor-row query-ctrl="ctrl" has-text-edit-mode="true">
   <div class="gf-form-inline">
-    <div class="gf-form max-width-20">
+    <div class="gf-form max-width-30">
+      <label class="gf-form-label width-7">Results Mode</label>
+      <div class="gf-form-select-wrapper">
+        <select class="gf-form-input"
+              ng-change="ctrl.switchResultsMode(ctrl.target.mode)"
+              ng-model="ctrl.target.mode"
+              on-change="ctrl.onChangeInternal()"
+              ng-options="m.mode as m.text for m in ctrl.resultsModes">
+        </select>
+      </div>
+    </div>
+  </div>
+  <div class="gf-form-inline">
+    <div class="gf-form max-width-30">
       <label class="gf-form-label query-keyword width-7">Check</label>
       <input type="text"
-        ng-model="ctrl.target.group.filter"
-        bs-typeahead="ctrl.getCheckList"
+        placeholder="Check Name"
+        ng-model="ctrl.target.target"
+        bs-typeahead="ctrl.getSuggestions"
         ng-blur="ctrl.onTargetBlur()"
         data-min-length=0
         data-items=100
         class="gf-form-input"
-        ng-class="{
-          'zbx-variable': ctrl.isVariable(ctrl.target.group.filter),
-          'zbx-regex': ctrl.isRegex(ctrl.target.group.filter)
-        }"
-        >
-    </input>
-  </div>
-
+        ></input>
+    </div>
   </div>
 </query-editor-row>

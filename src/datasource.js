@@ -16,20 +16,22 @@ export class GenericDatasource {
 
   query(options) {
     var query = this.buildQueryParameters(options);
-    // query.targets = query.targets.filter(t => !t.hide);
+    console.log(query.targets)
+    query.targets = query.targets.filter(t => !t.hide);
     if (query.targets.length <= 0) {
       return this.q.when({data: []});
     }
 
-    // if (this.templateSrv.getAdhocFilters) {
-    //   query.adhocFilters = this.templateSrv.getAdhocFilters(this.name);
-    // } else {
-    //   query.adhocFilters = [];
-    // }
+    if (this.templateSrv.getAdhocFilters) {
+      query.adhocFilters = this.templateSrv.getAdhocFilters(this.name);
+    } else {
+      query.adhocFilters = [];
+    }
 
-    return this.doRequest({
-      url: 'api/datasources/proxy/${this.id}/checksroute',
-      method: 'GET'
+    return this.customDoRequest({
+      url: `api/datasources/proxy/${this.id}/checksroute`,
+      method: 'GET',
+      data: query,
     }).then(result => this.mapToTable(result));
   }
 
@@ -71,7 +73,7 @@ export class GenericDatasource {
 
   testDatasource() {
     return this.doRequest({
-      url: 'api/datasources/proxy/${this.id}/checksroute',
+      url: `api/datasources/proxy/${this.id}/checksroute`,
       method: 'GET',
     }).then(response => {
       if (response.status === 200) {
@@ -95,7 +97,7 @@ export class GenericDatasource {
     };
 
     return this.doRequest({
-      url: this.url + '/annotations',
+      url: `api/datasources/proxy/${this.id}/checksroute`,
       method: 'POST',
       data: annotationQuery
     }).then(result => {
@@ -109,22 +111,49 @@ export class GenericDatasource {
     // };
 
     return this.doRequest({
-      url: 'api/datasources/proxy/${this.id}/checksroute',
+      url: `api/datasources/proxy/${this.id}/checksroute`,
       method: 'GET',
     }).then(result => this.mapToTextValue(result));
   }
 
   mapToTextValue(result) {
+    // console.log(result.data)
     return _.map(result.data.checks, (o, i) => {
-      return {text: o.name, value: o.unique_key};
+        // return {text: o.name, value: o.unique_key};
+        return o.name;
     });
+    // b = [{text:'',value:null}].concat(a)
+    // console.log(b)
+
+    // return b
   }
 
   doRequest(options) {
+    // console.log('Do Request options:')
+    // console.log(options)
     options.withCredentials = this.withCredentials;
     // options.headers = this.headers;
 
     return this.backendSrv.datasourceRequest(options);
+  }
+
+  customDoRequest(options){
+    console.log('Custom Request:')
+    console.log(options)
+
+    return this.backendSrv.datasourceRequest(options).then(response => {
+      if (options.data.targets.length == 1){
+        console.log('Target Response!')
+        console.log(response)
+        response.data.checks = _.filter(
+          response.data.checks,
+          (o,i) => {
+            return options.data.targets[0].target == o.unique_key;
+          });
+      }
+      return response
+    });
+
   }
 
   buildQueryParameters(options) {

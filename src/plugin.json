@@ -1,6 +1,6 @@
 {
   "name": "HealthChecksIO",
-  "id": "healthchecks-io-datasource",
+  "id": "jameskirsop-healthchecksio-datasource",
   "type": "datasource",
 
   "partials": {
@@ -21,11 +21,11 @@
       "large": "img/simpleJson_logo.svg"
     },
     "links": [
-      {"name": "GitHub", "url": "https://github.com/grafana/simple-json-datasource"},
-      {"name": "MIT License", "url": "https://github.com/grafana/simple-json-datasource/blob/master/LICENSE"}
+      {"name": "GitHub", "url": "https://github.com/grafana/grafana-healthchecksio-datasource"},
+      {"name": "MIT License", "url": "https://github.com/grafana/grafana-healthchecksio-datasource/blob/master/LICENSE"}
     ],
     "version": "0.0.2",
-    "updated": "2020-02-20"
+    "updated": "2020-02-25"
   },
 
   "routes": [
