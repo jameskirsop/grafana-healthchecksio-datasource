@@ -2,14 +2,12 @@ import {QueryCtrl} from 'app/plugins/sdk';
 import './css/query-editor.css!'
 
 export const MODE_SUMMARY = 0;
-export const MODE_STATUS = 1;
+export const MODE_SINGLE = 1;
 
 export class GenericDatasourceQueryCtrl extends QueryCtrl {
 
   constructor($scope, $injector,)  {
     super($scope, $injector);
-    // console.log('Query Control constructor')
-    // console.log(this.datasource)
 
     this.scope = $scope;
     // this.target.target = this.target.target || 'Select Check';
@@ -17,19 +15,16 @@ export class GenericDatasourceQueryCtrl extends QueryCtrl {
 
     this.resultsModes = [
       {value: 'sum',       text: 'Summary',     mode: MODE_SUMMARY},
-      {value: 'status',      text: 'Status',        mode: MODE_STATUS},
+      {value: 'single',      text: 'Single',        mode: MODE_SINGLE},
     ];
     
-    // this.$scope.resultsModes = {
-    //   SUMMARY: MODE_SUMMARY,
-    //   STATUS: MODE_STATUS,
-    // };
+    this.$scope.resultsMode = {
+      SUMMARY: MODE_SUMMARY,
+      SINGLE: MODE_SINGLE,
+    };
     
     this.init = function() {
       var target = this.target;
-
-      // Migrate old targets
-      // target = migrations.migrate(target);
 
       // var scopeDefaults = {
       //   metric: {},
@@ -43,6 +38,10 @@ export class GenericDatasourceQueryCtrl extends QueryCtrl {
         'mode': MODE_SUMMARY,
       };
       _.defaults(target, targetDefaults);
+
+      if (this.target.mode == MODE_SUMMARY) {
+        this.target.target = ''
+      }
     };
     this.init();
     // this.results = this.datasource.metricFindQuery(query || '');
@@ -51,11 +50,13 @@ export class GenericDatasourceQueryCtrl extends QueryCtrl {
 
   getOptions(query) {
     console.log('Getting options')
-    return this.datasource.metricFindQuery(query || '').then(a => {
-      this.scope.$digest();
-      console.log(a);
-      return a
+    let result = []; 
+    this.datasource.metricFindQuery(query || '').then(a => {
+      console.log(a)
+      a.forEach(item => result.push(item));
     });
+    console.log(result);
+    return result
   }
 
   // getTextValues(metricFindResult) {
@@ -82,7 +83,11 @@ export class GenericDatasourceQueryCtrl extends QueryCtrl {
   }
 
   switchResultsMode(mode){
+    console.log(mode)
     this.target.mode = mode;
+    this.init()
+    this.panelCtrl.refresh();
+    // console.log(this.resultsMode)
   }
 }
 GenericDatasourceQueryCtrl.templateUrl = 'partials/query.editor.html';

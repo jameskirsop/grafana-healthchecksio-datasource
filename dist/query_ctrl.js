@@ -3,7 +3,7 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.GenericDatasourceQueryCtrl = exports.MODE_STATUS = exports.MODE_SUMMARY = undefined;
+exports.GenericDatasourceQueryCtrl = exports.MODE_SINGLE = exports.MODE_SUMMARY = undefined;
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
@@ -18,7 +18,7 @@ function _possibleConstructorReturn(self, call) { if (!self) { throw new Referen
 function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
 var MODE_SUMMARY = exports.MODE_SUMMARY = 0;
-var MODE_STATUS = exports.MODE_STATUS = 1;
+var MODE_SINGLE = exports.MODE_SINGLE = 1;
 
 var GenericDatasourceQueryCtrl = exports.GenericDatasourceQueryCtrl = function (_QueryCtrl) {
   _inherits(GenericDatasourceQueryCtrl, _QueryCtrl);
@@ -26,27 +26,21 @@ var GenericDatasourceQueryCtrl = exports.GenericDatasourceQueryCtrl = function (
   function GenericDatasourceQueryCtrl($scope, $injector) {
     _classCallCheck(this, GenericDatasourceQueryCtrl);
 
-    // console.log('Query Control constructor')
-    // console.log(this.datasource)
-
     var _this = _possibleConstructorReturn(this, (GenericDatasourceQueryCtrl.__proto__ || Object.getPrototypeOf(GenericDatasourceQueryCtrl)).call(this, $scope, $injector));
 
     _this.scope = $scope;
     // this.target.target = this.target.target || 'Select Check';
     _this.target.type = _this.target.type || 'table';
 
-    _this.resultsModes = [{ value: 'sum', text: 'Summary', mode: MODE_SUMMARY }, { value: 'status', text: 'Status', mode: MODE_STATUS }];
+    _this.resultsModes = [{ value: 'sum', text: 'Summary', mode: MODE_SUMMARY }, { value: 'single', text: 'Single', mode: MODE_SINGLE }];
 
-    // this.$scope.resultsModes = {
-    //   SUMMARY: MODE_SUMMARY,
-    //   STATUS: MODE_STATUS,
-    // };
+    _this.$scope.resultsMode = {
+      SUMMARY: MODE_SUMMARY,
+      SINGLE: MODE_SINGLE
+    };
 
     _this.init = function () {
       var target = this.target;
-
-      // Migrate old targets
-      // target = migrations.migrate(target);
 
       // var scopeDefaults = {
       //   metric: {},
@@ -60,6 +54,10 @@ var GenericDatasourceQueryCtrl = exports.GenericDatasourceQueryCtrl = function (
         'mode': MODE_SUMMARY
       };
       _.defaults(target, targetDefaults);
+
+      if (this.target.mode == MODE_SUMMARY) {
+        this.target.target = '';
+      }
     };
     _this.init();
     // this.results = this.datasource.metricFindQuery(query || '');
@@ -70,14 +68,16 @@ var GenericDatasourceQueryCtrl = exports.GenericDatasourceQueryCtrl = function (
   _createClass(GenericDatasourceQueryCtrl, [{
     key: 'getOptions',
     value: function getOptions(query) {
-      var _this2 = this;
-
       console.log('Getting options');
-      return this.datasource.metricFindQuery(query || '').then(function (a) {
-        _this2.scope.$digest();
+      var result = [];
+      this.datasource.metricFindQuery(query || '').then(function (a) {
         console.log(a);
-        return a;
+        a.forEach(function (item) {
+          return result.push(item);
+        });
       });
+      console.log(result);
+      return result;
     }
 
     // getTextValues(metricFindResult) {
@@ -109,7 +109,11 @@ var GenericDatasourceQueryCtrl = exports.GenericDatasourceQueryCtrl = function (
   }, {
     key: 'switchResultsMode',
     value: function switchResultsMode(mode) {
+      console.log(mode);
       this.target.mode = mode;
+      this.init();
+      this.panelCtrl.refresh();
+      // console.log(this.resultsMode)
     }
   }]);
 

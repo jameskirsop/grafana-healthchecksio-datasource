@@ -15,27 +15,51 @@ export class GenericDatasource {
   }
 
   query(options) {
+    console.log('Options')
+    console.log(options)
     var query = this.buildQueryParameters(options);
-    console.log(query.targets)
+    console.log('Query')
+    console.log(query)
     query.targets = query.targets.filter(t => !t.hide);
     if (query.targets.length <= 0) {
       return this.q.when({data: []});
     }
 
-    if (this.templateSrv.getAdhocFilters) {
-      query.adhocFilters = this.templateSrv.getAdhocFilters(this.name);
-    } else {
-      query.adhocFilters = [];
-    }
-
     return this.customDoRequest({
-      url: `api/datasources/proxy/${this.id}/checksroute`,
+      url: `api/datasources/proxy/${this.id}/checksroute/${query.targets[0].target}`,
       method: 'GET',
       data: query,
-    }).then(result => this.mapToTable(result));
+    }).then(
+      result => this.mapToTable(result, query.targets[0].mode)
+    ).catch(
+      error => {
+        if (error.status == 404){
+          return {
+            status: "error",
+            title: "Connection failed",
+            message: "Connection failed: " + error.data.message
+          };
+        }
+      });
+    // if (this.templateSrv.getAdhocFilters) {
+    //   query.adhocFilters = this.templateSrv.getAdhocFilters(this.name);
+    // } else {
+    //   query.adhocFilters = [];
+    // }
+
   }
 
-  mapToTable(result) {
+  mapToTable(result, mode) {
+    console.log('Map to Table Result');
+    console.log(result);
+    console.log(mode);
+    var processingArray = result.data.checks;
+    if (mode == 1){
+      processingArray = [result.data,];
+      if (result.data.hasOwnProperty('checks')){
+        processingArray = []
+      }
+    }
     return {'data':[{
       'columns':[
         {"text":"name"},
@@ -47,6 +71,7 @@ export class GenericDatasource {
         },
         {"text":"Total Number of Pings"},
         {"text":"status"},
+        {"text":"Status Code"},
         {
           "text":"Last Ping",
           "type":"time",
@@ -63,13 +88,12 @@ export class GenericDatasource {
         {"text":"schedule"},
         {"text":"tz"},
       ],
-      'rows':_.map(result.data.checks,(o,i)=>{return Object.keys(o).map(function(key){
+      'rows':_.map(processingArray,(o,i)=>{return Object.keys(o).map(function(key){
           return o[key];
         });}),
       'type':'table',
     }]}
   }
-
 
   testDatasource() {
     return this.doRequest({
@@ -106,10 +130,6 @@ export class GenericDatasource {
   }
 
   metricFindQuery(query) {
-    // var interpolated = {
-    //     target: this.templateSrv.replace(query, null, 'regex')
-    // };
-
     return this.doRequest({
       url: `api/datasources/proxy/${this.id}/checksroute`,
       method: 'GET',
@@ -117,39 +137,24 @@ export class GenericDatasource {
   }
 
   mapToTextValue(result) {
-    // console.log(result.data)
     return _.map(result.data.checks, (o, i) => {
-        // return {text: o.name, value: o.unique_key};
         return o.name;
     });
-    // b = [{text:'',value:null}].concat(a)
-    // console.log(b)
-
-    // return b
   }
 
   doRequest(options) {
-    // console.log('Do Request options:')
-    // console.log(options)
     options.withCredentials = this.withCredentials;
-    // options.headers = this.headers;
-
     return this.backendSrv.datasourceRequest(options);
   }
 
   customDoRequest(options){
-    console.log('Custom Request:')
-    console.log(options)
-
     return this.backendSrv.datasourceRequest(options).then(response => {
       if (options.data.targets.length == 1){
-        console.log('Target Response!')
-        console.log(response)
-        response.data.checks = _.filter(
-          response.data.checks,
-          (o,i) => {
-            return options.data.targets[0].target == o.unique_key;
-          });
+        if (options.data.targets[0].target === ""){
+          response.data.checks = response.data.checks
+        } else {
+          // We should never get here now because we're returned a filtered result
+        }
       }
       return response
     });
@@ -166,6 +171,7 @@ export class GenericDatasource {
       return {
         target: this.templateSrv.replace(target.target, options.scopedVars, 'regex'),
         refId: target.refId,
+        mode: target.mode,
         hide: target.hide,
         type: target.type || 'timeserie'
       };

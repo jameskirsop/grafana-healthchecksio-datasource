@@ -35,8 +35,11 @@ var GenericDatasource = exports.GenericDatasource = function () {
     value: function query(options) {
       var _this = this;
 
+      console.log('Options');
+      console.log(options);
       var query = this.buildQueryParameters(options);
-      console.log(query.targets);
+      console.log('Query');
+      console.log(query);
       query.targets = query.targets.filter(function (t) {
         return !t.hide;
       });
@@ -44,28 +47,45 @@ var GenericDatasource = exports.GenericDatasource = function () {
         return this.q.when({ data: [] });
       }
 
-      if (this.templateSrv.getAdhocFilters) {
-        query.adhocFilters = this.templateSrv.getAdhocFilters(this.name);
-      } else {
-        query.adhocFilters = [];
-      }
-
       return this.customDoRequest({
-        url: 'api/datasources/proxy/' + this.id + '/checksroute',
+        url: 'api/datasources/proxy/' + this.id + '/checksroute/' + query.targets[0].target,
         method: 'GET',
         data: query
       }).then(function (result) {
-        return _this.mapToTable(result);
+        return _this.mapToTable(result, query.targets[0].mode);
+      }).catch(function (error) {
+        if (error.status == 404) {
+          return {
+            status: "error",
+            title: "Connection failed",
+            message: "Connection failed: " + error.data.message
+          };
+        }
       });
+      // if (this.templateSrv.getAdhocFilters) {
+      //   query.adhocFilters = this.templateSrv.getAdhocFilters(this.name);
+      // } else {
+      //   query.adhocFilters = [];
+      // }
     }
   }, {
     key: 'mapToTable',
-    value: function mapToTable(result) {
+    value: function mapToTable(result, mode) {
+      console.log('Map to Table Result');
+      console.log(result);
+      console.log(mode);
+      var processingArray = result.data.checks;
+      if (mode == 1) {
+        processingArray = [result.data];
+        if (result.data.hasOwnProperty('checks')) {
+          processingArray = [];
+        }
+      }
       return { 'data': [{
           'columns': [{ "text": "name" }, { "text": "tags" }, { "text": "Description" }, {
             "text": "Grace",
             "unit": "s"
-          }, { "text": "Total Number of Pings" }, { "text": "status" }, {
+          }, { "text": "Total Number of Pings" }, { "text": "status" }, { "text": "Status Code" }, {
             "text": "Last Ping",
             "type": "time",
             "sort": true,
@@ -76,7 +96,7 @@ var GenericDatasource = exports.GenericDatasource = function () {
             "sort": true,
             "asc": true
           }, { "text": "unique_key" }, { "text": "schedule" }, { "text": "tz" }],
-          'rows': _lodash2.default.map(result.data.checks, function (o, i) {
+          'rows': _lodash2.default.map(processingArray, function (o, i) {
             return Object.keys(o).map(function (key) {
               return o[key];
             });
@@ -125,10 +145,6 @@ var GenericDatasource = exports.GenericDatasource = function () {
     value: function metricFindQuery(query) {
       var _this2 = this;
 
-      // var interpolated = {
-      //     target: this.templateSrv.replace(query, null, 'regex')
-      // };
-
       return this.doRequest({
         url: 'api/datasources/proxy/' + this.id + '/checksroute',
         method: 'GET'
@@ -139,39 +155,26 @@ var GenericDatasource = exports.GenericDatasource = function () {
   }, {
     key: 'mapToTextValue',
     value: function mapToTextValue(result) {
-      // console.log(result.data)
       return _lodash2.default.map(result.data.checks, function (o, i) {
-        // return {text: o.name, value: o.unique_key};
         return o.name;
       });
-      // b = [{text:'',value:null}].concat(a)
-      // console.log(b)
-
-      // return b
     }
   }, {
     key: 'doRequest',
     value: function doRequest(options) {
-      // console.log('Do Request options:')
-      // console.log(options)
       options.withCredentials = this.withCredentials;
-      // options.headers = this.headers;
-
       return this.backendSrv.datasourceRequest(options);
     }
   }, {
     key: 'customDoRequest',
     value: function customDoRequest(options) {
-      console.log('Custom Request:');
-      console.log(options);
-
       return this.backendSrv.datasourceRequest(options).then(function (response) {
         if (options.data.targets.length == 1) {
-          console.log('Target Response!');
-          console.log(response);
-          response.data.checks = _lodash2.default.filter(response.data.checks, function (o, i) {
-            return options.data.targets[0].target == o.unique_key;
-          });
+          if (options.data.targets[0].target === "") {
+            response.data.checks = response.data.checks;
+          } else {
+            // We should never get here now because we're returned a filtered result
+          }
         }
         return response;
       });
@@ -190,6 +193,7 @@ var GenericDatasource = exports.GenericDatasource = function () {
         return {
           target: _this3.templateSrv.replace(target.target, options.scopedVars, 'regex'),
           refId: target.refId,
+          mode: target.mode,
           hide: target.hide,
           type: target.type || 'timeserie'
         };
