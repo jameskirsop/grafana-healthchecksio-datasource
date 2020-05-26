@@ -10,6 +10,6 @@ This datasource has been tested and built against:
 
 ## Installation
 
-This plugin is yet to be in the Grafana repository, and as such, you'll need to clone this project in to your Grafana plugins directory.
+This plugin is yet to be included in the Grafana repository, and as such, you'll need to clone this project in to your Grafana plugins directory.
 
 Once installed, you will need to set up a Read Only API key for each Project in your Healthchecks account.

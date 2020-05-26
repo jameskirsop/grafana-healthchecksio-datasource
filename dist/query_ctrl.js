@@ -69,15 +69,12 @@ var GenericDatasourceQueryCtrl = exports.GenericDatasourceQueryCtrl = function (
     key: 'getOptions',
     value: function getOptions(query) {
       console.log('Getting options');
-      var result = [];
-      this.datasource.metricFindQuery(query || '').then(function (a) {
+      return this.datasource.metricFindQuery(query || '').then(function (a) {
         console.log(a);
-        a.forEach(function (item) {
+        return a.forEach(function (item) {
           return result.push(item);
         });
       });
-      console.log(result);
-      return result;
     }
 
     // getTextValues(metricFindResult) {

@@ -50,13 +50,10 @@ export class GenericDatasourceQueryCtrl extends QueryCtrl {
 
   getOptions(query) {
     console.log('Getting options')
-    let result = []; 
-    this.datasource.metricFindQuery(query || '').then(a => {
+    return this.datasource.metricFindQuery(query || '').then(a => {
       console.log(a)
-      a.forEach(item => result.push(item));
+      return a.forEach(item => result.push(item));
     });
-    console.log(result);
-    return result
   }
 
   // getTextValues(metricFindResult) {

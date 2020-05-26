@@ -15,11 +15,7 @@ export class GenericDatasource {
   }
 
   query(options) {
-    console.log('Options')
-    console.log(options)
     var query = this.buildQueryParameters(options);
-    console.log('Query')
-    console.log(query)
     query.targets = query.targets.filter(t => !t.hide);
     if (query.targets.length <= 0) {
       return this.q.when({data: []});
@@ -28,11 +24,12 @@ export class GenericDatasource {
     return this.customDoRequest({
       url: `api/datasources/proxy/${this.id}/checksroute/${query.targets[0].target}`,
       method: 'GET',
-      data: query,
-    }).then(
-      result => this.mapToTable(result, query.targets[0].mode)
+    },query).then(
+      result => {
+        return this.mapToTable(result, query.targets[0].mode)}
     ).catch(
       error => {
+        console.log(error);
         if (error.status == 404){
           return {
             status: "error",
@@ -60,6 +57,7 @@ export class GenericDatasource {
         processingArray = []
       }
     }
+
     return {'data':[{
       'columns':[
         {"text":"name"},
@@ -147,10 +145,11 @@ export class GenericDatasource {
     return this.backendSrv.datasourceRequest(options);
   }
 
-  customDoRequest(options){
+  customDoRequest(options,additionalData){
+    console.log(additionalData);
     return this.backendSrv.datasourceRequest(options).then(response => {
-      if (options.data.targets.length == 1){
-        if (options.data.targets[0].target === ""){
+      if (additionalData.targets.length == 1){
+        if (additionalData.targets[0].target === ""){
           response.data.checks = response.data.checks
         } else {
           // We should never get here now because we're returned a filtered result

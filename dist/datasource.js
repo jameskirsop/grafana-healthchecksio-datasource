@@ -1,4 +1,4 @@
-'use strict';
+"use strict";
 
 Object.defineProperty(exports, "__esModule", {
   value: true
@@ -7,7 +7,7 @@ exports.GenericDatasource = undefined;
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
-var _lodash = require('lodash');
+var _lodash = require("lodash");
 
 var _lodash2 = _interopRequireDefault(_lodash);
 
@@ -31,15 +31,11 @@ var GenericDatasource = exports.GenericDatasource = function () {
   }
 
   _createClass(GenericDatasource, [{
-    key: 'query',
+    key: "query",
     value: function query(options) {
       var _this = this;
 
-      console.log('Options');
-      console.log(options);
       var query = this.buildQueryParameters(options);
-      console.log('Query');
-      console.log(query);
       query.targets = query.targets.filter(function (t) {
         return !t.hide;
       });
@@ -48,12 +44,12 @@ var GenericDatasource = exports.GenericDatasource = function () {
       }
 
       return this.customDoRequest({
-        url: 'api/datasources/proxy/' + this.id + '/checksroute/' + query.targets[0].target,
-        method: 'GET',
-        data: query
-      }).then(function (result) {
+        url: "api/datasources/proxy/" + this.id + "/checksroute/" + query.targets[0].target,
+        method: 'GET'
+      }, query).then(function (result) {
         return _this.mapToTable(result, query.targets[0].mode);
       }).catch(function (error) {
+        console.log(error);
         if (error.status == 404) {
           return {
             status: "error",
@@ -69,7 +65,7 @@ var GenericDatasource = exports.GenericDatasource = function () {
       // }
     }
   }, {
-    key: 'mapToTable',
+    key: "mapToTable",
     value: function mapToTable(result, mode) {
       console.log('Map to Table Result');
       console.log(result);
@@ -81,6 +77,7 @@ var GenericDatasource = exports.GenericDatasource = function () {
           processingArray = [];
         }
       }
+
       return { 'data': [{
           'columns': [{ "text": "name" }, { "text": "tags" }, { "text": "Description" }, {
             "text": "Grace",
@@ -105,10 +102,10 @@ var GenericDatasource = exports.GenericDatasource = function () {
         }] };
     }
   }, {
-    key: 'testDatasource',
+    key: "testDatasource",
     value: function testDatasource() {
       return this.doRequest({
-        url: 'api/datasources/proxy/' + this.id + '/checksroute',
+        url: "api/datasources/proxy/" + this.id + "/checksroute",
         method: 'GET'
       }).then(function (response) {
         if (response.status === 200) {
@@ -117,7 +114,7 @@ var GenericDatasource = exports.GenericDatasource = function () {
       });
     }
   }, {
-    key: 'annotationQuery',
+    key: "annotationQuery",
     value: function annotationQuery(options) {
       var query = this.templateSrv.replace(options.annotation.query, {}, 'glob');
       var annotationQuery = {
@@ -133,7 +130,7 @@ var GenericDatasource = exports.GenericDatasource = function () {
       };
 
       return this.doRequest({
-        url: 'api/datasources/proxy/' + this.id + '/checksroute',
+        url: "api/datasources/proxy/" + this.id + "/checksroute",
         method: 'POST',
         data: annotationQuery
       }).then(function (result) {
@@ -141,36 +138,37 @@ var GenericDatasource = exports.GenericDatasource = function () {
       });
     }
   }, {
-    key: 'metricFindQuery',
+    key: "metricFindQuery",
     value: function metricFindQuery(query) {
       var _this2 = this;
 
       return this.doRequest({
-        url: 'api/datasources/proxy/' + this.id + '/checksroute',
+        url: "api/datasources/proxy/" + this.id + "/checksroute",
         method: 'GET'
       }).then(function (result) {
         return _this2.mapToTextValue(result);
       });
     }
   }, {
-    key: 'mapToTextValue',
+    key: "mapToTextValue",
     value: function mapToTextValue(result) {
       return _lodash2.default.map(result.data.checks, function (o, i) {
         return o.name;
       });
     }
   }, {
-    key: 'doRequest',
+    key: "doRequest",
     value: function doRequest(options) {
       options.withCredentials = this.withCredentials;
       return this.backendSrv.datasourceRequest(options);
     }
   }, {
-    key: 'customDoRequest',
-    value: function customDoRequest(options) {
+    key: "customDoRequest",
+    value: function customDoRequest(options, additionalData) {
+      console.log(additionalData);
       return this.backendSrv.datasourceRequest(options).then(function (response) {
-        if (options.data.targets.length == 1) {
-          if (options.data.targets[0].target === "") {
+        if (additionalData.targets.length == 1) {
+          if (additionalData.targets[0].target === "") {
             response.data.checks = response.data.checks;
           } else {
             // We should never get here now because we're returned a filtered result
@@ -180,7 +178,7 @@ var GenericDatasource = exports.GenericDatasource = function () {
       });
     }
   }, {
-    key: 'buildQueryParameters',
+    key: "buildQueryParameters",
     value: function buildQueryParameters(options) {
       var _this3 = this;
 
@@ -204,7 +202,7 @@ var GenericDatasource = exports.GenericDatasource = function () {
       return options;
     }
   }, {
-    key: 'getTagKeys',
+    key: "getTagKeys",
     value: function getTagKeys(options) {
       var _this4 = this;
 
@@ -219,7 +217,7 @@ var GenericDatasource = exports.GenericDatasource = function () {
       });
     }
   }, {
-    key: 'getTagValues',
+    key: "getTagValues",
     value: function getTagValues(options) {
       var _this5 = this;
 
