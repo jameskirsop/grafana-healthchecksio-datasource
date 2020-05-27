@@ -29,7 +29,8 @@ var GenericDatasourceQueryCtrl = exports.GenericDatasourceQueryCtrl = function (
     var _this = _possibleConstructorReturn(this, (GenericDatasourceQueryCtrl.__proto__ || Object.getPrototypeOf(GenericDatasourceQueryCtrl)).call(this, $scope, $injector));
 
     _this.scope = $scope;
-    // this.target.target = this.target.target || 'Select Check';
+    _this.target.check = _this.target.check || 'Select Check';
+    _this.target.uuid = _this.target.uuid || null;
     _this.target.type = _this.target.type || 'table';
 
     _this.resultsModes = [{ value: 'sum', text: 'Summary', mode: MODE_SUMMARY }, { value: 'single', text: 'Single', mode: MODE_SINGLE }];
@@ -41,13 +42,14 @@ var GenericDatasourceQueryCtrl = exports.GenericDatasourceQueryCtrl = function (
 
     _this.init = function () {
       var target = this.target;
+      var metric = this.metric;
 
-      // var scopeDefaults = {
-      //   metric: {},
-      //   oldTarget: _.cloneDeep(this.target),
-      //   queryOptionsText: this.renderQueryOptionsText()
-      // };
-      // _.defaults(this, scopeDefaults);
+      var scopeDefaults = {
+        metric: {}
+        // oldTarget: _.cloneDeep(this.target),
+        // queryOptionsText: this.renderQueryOptionsText()
+      };
+      _.defaults(this, scopeDefaults);
 
       // Load default values
       var targetDefaults = {
@@ -56,8 +58,10 @@ var GenericDatasourceQueryCtrl = exports.GenericDatasourceQueryCtrl = function (
       _.defaults(target, targetDefaults);
 
       if (this.target.mode == MODE_SUMMARY) {
-        this.target.target = '';
+        this.target.check = '';
       }
+
+      this.getMetricSuggestionsAsync();
     };
     _this.init();
     // this.results = this.datasource.metricFindQuery(query || '');
@@ -68,12 +72,21 @@ var GenericDatasourceQueryCtrl = exports.GenericDatasourceQueryCtrl = function (
   _createClass(GenericDatasourceQueryCtrl, [{
     key: 'getOptions',
     value: function getOptions(query) {
-      console.log('Getting options');
+      return this.metric.suggestions;
+    }
+  }, {
+    key: 'getMetricSuggestionsAsync',
+    value: function getMetricSuggestionsAsync(query) {
+      var _this2 = this;
+
       return this.datasource.metricFindQuery(query || '').then(function (a) {
-        console.log(a);
-        return a.forEach(function (item) {
-          return result.push(item);
+        var result = [];
+        _this2.metric.rawQueryResult = a;
+        a.forEach(function (item) {
+          return result.push(item.name);
         });
+        _this2.metric.suggestions = result;
+        return result;
       });
     }
 
@@ -96,18 +109,24 @@ var GenericDatasourceQueryCtrl = exports.GenericDatasourceQueryCtrl = function (
   }, {
     key: 'onTargetBlur',
     value: function onTargetBlur() {
+      var _this3 = this;
+
+      this.target.uuid = this.metric.rawQueryResult.find(function (el) {
+        return el.name == _this3.target.check;
+      }).code;
       var newTarget = _.cloneDeep(this.target);
       if (!_.isEqual(this.oldTarget, this.target)) {
         this.oldTarget = newTarget;
-        // this.targetChanged();
         this.panelCtrl.refresh();
       }
     }
   }, {
     key: 'switchResultsMode',
     value: function switchResultsMode(mode) {
-      console.log(mode);
       this.target.mode = mode;
+      if (mode == 0) {
+        this.target.uuid = '';
+      }
       this.init();
       this.panelCtrl.refresh();
       // console.log(this.resultsMode)

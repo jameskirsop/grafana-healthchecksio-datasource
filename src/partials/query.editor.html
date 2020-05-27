@@ -17,11 +17,13 @@
       <label class="gf-form-label query-keyword width-7">Check</label>
       <input type="text"
         placeholder="Check Name"
-        ng-model="ctrl.target.target"
+        ng-model="ctrl.target.check"
         bs-typeahead="ctrl.getSuggestions"
+        typeahead-loading="true"
         ng-blur="ctrl.onTargetBlur()"
         data-min-length=0
         data-items=100
+        data-watchOptions="true"
         class="gf-form-input"
         ></input>
     </div>

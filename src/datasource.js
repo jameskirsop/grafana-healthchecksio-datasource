@@ -20,9 +20,8 @@ export class GenericDatasource {
     if (query.targets.length <= 0) {
       return this.q.when({data: []});
     }
-
     return this.customDoRequest({
-      url: `api/datasources/proxy/${this.id}/checksroute/${query.targets[0].target}`,
+      url: `api/datasources/proxy/${this.id}/checksroute/${query.targets[0].uuid}`,
       method: 'GET',
     },query).then(
       result => {
@@ -47,9 +46,6 @@ export class GenericDatasource {
   }
 
   mapToTable(result, mode) {
-    console.log('Map to Table Result');
-    console.log(result);
-    console.log(mode);
     var processingArray = result.data.checks;
     if (mode == 1){
       processingArray = [result.data,];
@@ -131,12 +127,12 @@ export class GenericDatasource {
     return this.doRequest({
       url: `api/datasources/proxy/${this.id}/checksroute`,
       method: 'GET',
-    }).then(result => this.mapToTextValue(result));
+    }).then(result => this.mapResultToList(result));
   }
 
-  mapToTextValue(result) {
+  mapResultToList(result) {
     return _.map(result.data.checks, (o, i) => {
-        return o.name;
+        return {name: o.name, code: o.timeout};
     });
   }
 
@@ -146,7 +142,6 @@ export class GenericDatasource {
   }
 
   customDoRequest(options,additionalData){
-    console.log(additionalData);
     return this.backendSrv.datasourceRequest(options).then(response => {
       if (additionalData.targets.length == 1){
         if (additionalData.targets[0].target === ""){
@@ -163,15 +158,16 @@ export class GenericDatasource {
   buildQueryParameters(options) {
     //remove placeholder targets
     options.targets = _.filter(options.targets, target => {
-      return target.target !== 'select metric';
+      return target.check !== 'Select Check';
     });
 
     var targets = _.map(options.targets, target => {
       return {
-        target: this.templateSrv.replace(target.target, options.scopedVars, 'regex'),
+        check: this.templateSrv.replace(target.check, options.scopedVars, 'regex'),
         refId: target.refId,
         mode: target.mode,
         hide: target.hide,
+        uuid: target.uuid,
         type: target.type || 'timeserie'
       };
     });

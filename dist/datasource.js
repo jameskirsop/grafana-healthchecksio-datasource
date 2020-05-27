@@ -42,9 +42,8 @@ var GenericDatasource = exports.GenericDatasource = function () {
       if (query.targets.length <= 0) {
         return this.q.when({ data: [] });
       }
-
       return this.customDoRequest({
-        url: "api/datasources/proxy/" + this.id + "/checksroute/" + query.targets[0].target,
+        url: "api/datasources/proxy/" + this.id + "/checksroute/" + query.targets[0].uuid,
         method: 'GET'
       }, query).then(function (result) {
         return _this.mapToTable(result, query.targets[0].mode);
@@ -67,9 +66,6 @@ var GenericDatasource = exports.GenericDatasource = function () {
   }, {
     key: "mapToTable",
     value: function mapToTable(result, mode) {
-      console.log('Map to Table Result');
-      console.log(result);
-      console.log(mode);
       var processingArray = result.data.checks;
       if (mode == 1) {
         processingArray = [result.data];
@@ -146,14 +142,14 @@ var GenericDatasource = exports.GenericDatasource = function () {
         url: "api/datasources/proxy/" + this.id + "/checksroute",
         method: 'GET'
       }).then(function (result) {
-        return _this2.mapToTextValue(result);
+        return _this2.mapResultToList(result);
       });
     }
   }, {
-    key: "mapToTextValue",
-    value: function mapToTextValue(result) {
+    key: "mapResultToList",
+    value: function mapResultToList(result) {
       return _lodash2.default.map(result.data.checks, function (o, i) {
-        return o.name;
+        return { name: o.name, code: o.timeout };
       });
     }
   }, {
@@ -165,7 +161,6 @@ var GenericDatasource = exports.GenericDatasource = function () {
   }, {
     key: "customDoRequest",
     value: function customDoRequest(options, additionalData) {
-      console.log(additionalData);
       return this.backendSrv.datasourceRequest(options).then(function (response) {
         if (additionalData.targets.length == 1) {
           if (additionalData.targets[0].target === "") {
@@ -184,15 +179,16 @@ var GenericDatasource = exports.GenericDatasource = function () {
 
       //remove placeholder targets
       options.targets = _lodash2.default.filter(options.targets, function (target) {
-        return target.target !== 'select metric';
+        return target.check !== 'Select Check';
       });
 
       var targets = _lodash2.default.map(options.targets, function (target) {
         return {
-          target: _this3.templateSrv.replace(target.target, options.scopedVars, 'regex'),
+          check: _this3.templateSrv.replace(target.check, options.scopedVars, 'regex'),
           refId: target.refId,
           mode: target.mode,
           hide: target.hide,
+          uuid: target.uuid,
           type: target.type || 'timeserie'
         };
       });

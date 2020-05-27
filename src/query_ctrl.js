@@ -10,7 +10,8 @@ export class GenericDatasourceQueryCtrl extends QueryCtrl {
     super($scope, $injector);
 
     this.scope = $scope;
-    // this.target.target = this.target.target || 'Select Check';
+    this.target.check = this.target.check || 'Select Check';
+    this.target.uuid = this.target.uuid || null
     this.target.type = this.target.type || 'table';
 
     this.resultsModes = [
@@ -25,13 +26,14 @@ export class GenericDatasourceQueryCtrl extends QueryCtrl {
     
     this.init = function() {
       var target = this.target;
+      var metric = this.metric;
 
-      // var scopeDefaults = {
-      //   metric: {},
-      //   oldTarget: _.cloneDeep(this.target),
-      //   queryOptionsText: this.renderQueryOptionsText()
-      // };
-      // _.defaults(this, scopeDefaults);
+      var scopeDefaults = {
+        metric: {},
+        // oldTarget: _.cloneDeep(this.target),
+        // queryOptionsText: this.renderQueryOptionsText()
+      };
+      _.defaults(this, scopeDefaults);
 
       // Load default values
       var targetDefaults = {
@@ -40,8 +42,10 @@ export class GenericDatasourceQueryCtrl extends QueryCtrl {
       _.defaults(target, targetDefaults);
 
       if (this.target.mode == MODE_SUMMARY) {
-        this.target.target = ''
+        this.target.check = ''
       }
+
+      this.getMetricSuggestionsAsync();
     };
     this.init();
     // this.results = this.datasource.metricFindQuery(query || '');
@@ -49,10 +53,16 @@ export class GenericDatasourceQueryCtrl extends QueryCtrl {
   }
 
   getOptions(query) {
-    console.log('Getting options')
+    return this.metric.suggestions
+  }
+
+  getMetricSuggestionsAsync(query) {
     return this.datasource.metricFindQuery(query || '').then(a => {
-      console.log(a)
-      return a.forEach(item => result.push(item));
+      let result = []
+      this.metric.rawQueryResult = a
+      a.forEach(item => result.push(item.name));
+      this.metric.suggestions = result
+      return result
     });
   }
 
@@ -71,17 +81,19 @@ export class GenericDatasourceQueryCtrl extends QueryCtrl {
   }
 
   onTargetBlur() {
+    this.target.uuid = this.metric.rawQueryResult.find(el => el.name == this.target.check).code
     var newTarget = _.cloneDeep(this.target);
-    if (!_.isEqual(this.oldTarget, this.target)) {
+    if (!_.isEqual(this.oldTarget, this.target)) {  
       this.oldTarget = newTarget;
-      // this.targetChanged();
       this.panelCtrl.refresh();
     }
   }
 
   switchResultsMode(mode){
-    console.log(mode)
     this.target.mode = mode;
+    if (mode == 0){
+      this.target.uuid = ''
+    }
     this.init()
     this.panelCtrl.refresh();
     // console.log(this.resultsMode)
