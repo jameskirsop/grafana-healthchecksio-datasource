@@ -20,8 +20,17 @@ export class GenericDatasource {
     if (query.targets.length <= 0) {
       return this.q.when({data: []});
     }
+    switch (query.targets[0].mode) {
+      case 2:
+        var queryUrl = `api/datasources/proxy/${this.id}/checksroute/${query.targets[0].uuid}/flips/`
+        break;    
+      default:
+        var queryUrl = `api/datasources/proxy/${this.id}/checksroute/${query.targets[0].uuid}`
+        break;
+    }
+    console.log('Mode'+query.targets[0].mode)
     return this.customDoRequest({
-      url: `api/datasources/proxy/${this.id}/checksroute/${query.targets[0].uuid}`,
+      url: queryUrl,
       method: 'GET',
     },query).then(
       result => {
@@ -37,23 +46,22 @@ export class GenericDatasource {
           };
         }
       });
-    // if (this.templateSrv.getAdhocFilters) {
-    //   query.adhocFilters = this.templateSrv.getAdhocFilters(this.name);
-    // } else {
-    //   query.adhocFilters = [];
-    // }
-
   }
 
   mapToTable(result, mode) {
     var processingArray = result.data.checks;
-    if (mode == 1){
+    if (mode == 2){
+      return {'data':[{
+        'columns':[
+          {"text":"time","type":"time"},
+          {"status":"text"},
+        ],'rows':_.map(result.data.flips,(o,i)=>{return Object.keys(o).map(function(key){return o[key];});})}]}
+    } else if(mode == 1){
       processingArray = [result.data,];
       if (result.data.hasOwnProperty('checks')){
         processingArray = []
       }
     }
-
     return {'data':[{
       'columns':[
         {"text":"name"},
@@ -65,7 +73,6 @@ export class GenericDatasource {
         },
         {"text":"Total Number of Pings"},
         {"text":"status"},
-        {"text":"Status Code"},
         {
           "text":"Last Ping",
           "type":"time",
@@ -78,11 +85,22 @@ export class GenericDatasource {
           "sort":true,
           "asc":true,
         },
+        {"text":"manual_resume"},
         {"text":"unique_key"},
         {"text":"schedule"},
         {"text":"tz"},
       ],
       'rows':_.map(processingArray,(o,i)=>{return Object.keys(o).map(function(key){
+          if(key == 'status'){
+            let x = {"down": 0,
+              "grace": 1,
+              "started": 2,
+              "paused": 3,
+              "new": 4,
+              "up": 5
+            }
+            return x[o[key]]
+          }
           return o[key];
         });}),
       'type':'table',
@@ -132,7 +150,7 @@ export class GenericDatasource {
 
   mapResultToList(result) {
     return _.map(result.data.checks, (o, i) => {
-        return {name: o.name, code: o.timeout};
+        return {name: o.name, code: o.unique_key};
     });
   }
 

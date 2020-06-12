@@ -3,7 +3,7 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.GenericDatasourceQueryCtrl = exports.MODE_SINGLE = exports.MODE_SUMMARY = undefined;
+exports.GenericDatasourceQueryCtrl = exports.MODE_SINGLE_HISTORY = exports.MODE_SINGLE = exports.MODE_SUMMARY = undefined;
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
@@ -19,6 +19,7 @@ function _inherits(subClass, superClass) { if (typeof superClass !== "function" 
 
 var MODE_SUMMARY = exports.MODE_SUMMARY = 0;
 var MODE_SINGLE = exports.MODE_SINGLE = 1;
+var MODE_SINGLE_HISTORY = exports.MODE_SINGLE_HISTORY = 2;
 
 var GenericDatasourceQueryCtrl = exports.GenericDatasourceQueryCtrl = function (_QueryCtrl) {
   _inherits(GenericDatasourceQueryCtrl, _QueryCtrl);
@@ -33,11 +34,12 @@ var GenericDatasourceQueryCtrl = exports.GenericDatasourceQueryCtrl = function (
     _this.target.uuid = _this.target.uuid || null;
     _this.target.type = _this.target.type || 'table';
 
-    _this.resultsModes = [{ value: 'sum', text: 'Summary', mode: MODE_SUMMARY }, { value: 'single', text: 'Single', mode: MODE_SINGLE }];
+    _this.resultsModes = [{ value: 'sum', text: 'Summary', mode: MODE_SUMMARY }, { value: 'single', text: 'Single', mode: MODE_SINGLE }, { value: 'single-history', text: 'Single History', mode: MODE_SINGLE_HISTORY }];
 
     _this.$scope.resultsMode = {
       SUMMARY: MODE_SUMMARY,
-      SINGLE: MODE_SINGLE
+      SINGLE: MODE_SINGLE,
+      HISTORY: MODE_SINGLE_HISTORY
     };
 
     _this.init = function () {
@@ -86,6 +88,7 @@ var GenericDatasourceQueryCtrl = exports.GenericDatasourceQueryCtrl = function (
           return result.push(item.name);
         });
         _this2.metric.suggestions = result;
+        console.log(_this2.metric.rawQueryResult);
         return result;
       });
     }

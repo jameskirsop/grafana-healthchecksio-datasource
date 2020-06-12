@@ -1,4 +1,4 @@
-"use strict";
+'use strict';
 
 Object.defineProperty(exports, "__esModule", {
   value: true
@@ -7,7 +7,7 @@ exports.GenericDatasource = undefined;
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
-var _lodash = require("lodash");
+var _lodash = require('lodash');
 
 var _lodash2 = _interopRequireDefault(_lodash);
 
@@ -31,7 +31,7 @@ var GenericDatasource = exports.GenericDatasource = function () {
   }
 
   _createClass(GenericDatasource, [{
-    key: "query",
+    key: 'query',
     value: function query(options) {
       var _this = this;
 
@@ -42,8 +42,17 @@ var GenericDatasource = exports.GenericDatasource = function () {
       if (query.targets.length <= 0) {
         return this.q.when({ data: [] });
       }
+      switch (query.targets[0].mode) {
+        case 2:
+          var queryUrl = 'api/datasources/proxy/' + this.id + '/checksroute/' + query.targets[0].uuid + '/flips/';
+          break;
+        default:
+          var queryUrl = 'api/datasources/proxy/' + this.id + '/checksroute/' + query.targets[0].uuid;
+          break;
+      }
+      console.log('Mode' + query.targets[0].mode);
       return this.customDoRequest({
-        url: "api/datasources/proxy/" + this.id + "/checksroute/" + query.targets[0].uuid,
+        url: queryUrl,
         method: 'GET'
       }, query).then(function (result) {
         return _this.mapToTable(result, query.targets[0].mode);
@@ -57,28 +66,29 @@ var GenericDatasource = exports.GenericDatasource = function () {
           };
         }
       });
-      // if (this.templateSrv.getAdhocFilters) {
-      //   query.adhocFilters = this.templateSrv.getAdhocFilters(this.name);
-      // } else {
-      //   query.adhocFilters = [];
-      // }
     }
   }, {
-    key: "mapToTable",
+    key: 'mapToTable',
     value: function mapToTable(result, mode) {
       var processingArray = result.data.checks;
-      if (mode == 1) {
+      if (mode == 2) {
+        return { 'data': [{
+            'columns': [{ "text": "time", "type": "time" }, { "status": "text" }], 'rows': _lodash2.default.map(result.data.flips, function (o, i) {
+              return Object.keys(o).map(function (key) {
+                return o[key];
+              });
+            }) }] };
+      } else if (mode == 1) {
         processingArray = [result.data];
         if (result.data.hasOwnProperty('checks')) {
           processingArray = [];
         }
       }
-
       return { 'data': [{
           'columns': [{ "text": "name" }, { "text": "tags" }, { "text": "Description" }, {
             "text": "Grace",
             "unit": "s"
-          }, { "text": "Total Number of Pings" }, { "text": "status" }, { "text": "Status Code" }, {
+          }, { "text": "Total Number of Pings" }, { "text": "status" }, {
             "text": "Last Ping",
             "type": "time",
             "sort": true,
@@ -88,9 +98,19 @@ var GenericDatasource = exports.GenericDatasource = function () {
             "type": "time",
             "sort": true,
             "asc": true
-          }, { "text": "unique_key" }, { "text": "schedule" }, { "text": "tz" }],
+          }, { "text": "manual_resume" }, { "text": "unique_key" }, { "text": "schedule" }, { "text": "tz" }],
           'rows': _lodash2.default.map(processingArray, function (o, i) {
             return Object.keys(o).map(function (key) {
+              if (key == 'status') {
+                var x = { "down": 0,
+                  "grace": 1,
+                  "started": 2,
+                  "paused": 3,
+                  "new": 4,
+                  "up": 5
+                };
+                return x[o[key]];
+              }
               return o[key];
             });
           }),
@@ -98,10 +118,10 @@ var GenericDatasource = exports.GenericDatasource = function () {
         }] };
     }
   }, {
-    key: "testDatasource",
+    key: 'testDatasource',
     value: function testDatasource() {
       return this.doRequest({
-        url: "api/datasources/proxy/" + this.id + "/checksroute",
+        url: 'api/datasources/proxy/' + this.id + '/checksroute',
         method: 'GET'
       }).then(function (response) {
         if (response.status === 200) {
@@ -110,7 +130,7 @@ var GenericDatasource = exports.GenericDatasource = function () {
       });
     }
   }, {
-    key: "annotationQuery",
+    key: 'annotationQuery',
     value: function annotationQuery(options) {
       var query = this.templateSrv.replace(options.annotation.query, {}, 'glob');
       var annotationQuery = {
@@ -126,7 +146,7 @@ var GenericDatasource = exports.GenericDatasource = function () {
       };
 
       return this.doRequest({
-        url: "api/datasources/proxy/" + this.id + "/checksroute",
+        url: 'api/datasources/proxy/' + this.id + '/checksroute',
         method: 'POST',
         data: annotationQuery
       }).then(function (result) {
@@ -134,32 +154,32 @@ var GenericDatasource = exports.GenericDatasource = function () {
       });
     }
   }, {
-    key: "metricFindQuery",
+    key: 'metricFindQuery',
     value: function metricFindQuery(query) {
       var _this2 = this;
 
       return this.doRequest({
-        url: "api/datasources/proxy/" + this.id + "/checksroute",
+        url: 'api/datasources/proxy/' + this.id + '/checksroute',
         method: 'GET'
       }).then(function (result) {
         return _this2.mapResultToList(result);
       });
     }
   }, {
-    key: "mapResultToList",
+    key: 'mapResultToList',
     value: function mapResultToList(result) {
       return _lodash2.default.map(result.data.checks, function (o, i) {
-        return { name: o.name, code: o.timeout };
+        return { name: o.name, code: o.unique_key };
       });
     }
   }, {
-    key: "doRequest",
+    key: 'doRequest',
     value: function doRequest(options) {
       options.withCredentials = this.withCredentials;
       return this.backendSrv.datasourceRequest(options);
     }
   }, {
-    key: "customDoRequest",
+    key: 'customDoRequest',
     value: function customDoRequest(options, additionalData) {
       return this.backendSrv.datasourceRequest(options).then(function (response) {
         if (additionalData.targets.length == 1) {
@@ -173,7 +193,7 @@ var GenericDatasource = exports.GenericDatasource = function () {
       });
     }
   }, {
-    key: "buildQueryParameters",
+    key: 'buildQueryParameters',
     value: function buildQueryParameters(options) {
       var _this3 = this;
 
@@ -198,7 +218,7 @@ var GenericDatasource = exports.GenericDatasource = function () {
       return options;
     }
   }, {
-    key: "getTagKeys",
+    key: 'getTagKeys',
     value: function getTagKeys(options) {
       var _this4 = this;
 
@@ -213,7 +233,7 @@ var GenericDatasource = exports.GenericDatasource = function () {
       });
     }
   }, {
-    key: "getTagValues",
+    key: 'getTagValues',
     value: function getTagValues(options) {
       var _this5 = this;
 

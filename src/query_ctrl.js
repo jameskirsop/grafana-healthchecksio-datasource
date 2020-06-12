@@ -3,6 +3,7 @@ import './css/query-editor.css!'
 
 export const MODE_SUMMARY = 0;
 export const MODE_SINGLE = 1;
+export const MODE_SINGLE_HISTORY = 2;
 
 export class GenericDatasourceQueryCtrl extends QueryCtrl {
 
@@ -17,11 +18,13 @@ export class GenericDatasourceQueryCtrl extends QueryCtrl {
     this.resultsModes = [
       {value: 'sum',       text: 'Summary',     mode: MODE_SUMMARY},
       {value: 'single',      text: 'Single',        mode: MODE_SINGLE},
+      {value: 'single-history',      text: 'Single History',        mode: MODE_SINGLE_HISTORY},
     ];
     
     this.$scope.resultsMode = {
       SUMMARY: MODE_SUMMARY,
       SINGLE: MODE_SINGLE,
+      HISTORY: MODE_SINGLE_HISTORY,
     };
     
     this.init = function() {
@@ -62,6 +65,7 @@ export class GenericDatasourceQueryCtrl extends QueryCtrl {
       this.metric.rawQueryResult = a
       a.forEach(item => result.push(item.name));
       this.metric.suggestions = result
+      console.log(this.metric.rawQueryResult)
       return result
     });
   }
