@@ -132,7 +132,6 @@ var GenericDatasourceQueryCtrl = exports.GenericDatasourceQueryCtrl = function (
       }
       this.init();
       this.panelCtrl.refresh();
-      // console.log(this.resultsMode)
     }
   }]);
 

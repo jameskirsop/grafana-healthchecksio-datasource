@@ -27,19 +27,21 @@
         class="gf-form-input"
         ></input>
     </div>
-    <div class="gf-form-inline" ng-show="ctrl.target.mode == resultsMode.SINGLE_HISTORY">
-      <div class="gf-form max-width-30">
-        <label class="gf-form-label query-keyword width-7">Check</label>
-        <input type="text"
-          placeholder="Check Name"
-          ng-model="ctrl.target.check"
-          bs-typeahead="ctrl.getSuggestions"
-          typeahead-loading="true"
-          ng-blur="ctrl.onTargetBlur()"
-          data-min-length=0
-          data-items=100
-          data-watchOptions="true"
-          class="gf-form-input"
-          ></input>
-      </div>  </div>
+  </div>
+  <div class="gf-form-inline" ng-show="ctrl.target.mode == resultsMode.HISTORY">
+    <div class="gf-form max-width-30">
+      <label class="gf-form-label query-keyword width-7">Check</label>
+      <input type="text"
+        placeholder="Check Name"
+        ng-model="ctrl.target.check"
+        bs-typeahead="ctrl.getSuggestions"
+        typeahead-loading="true"
+        ng-blur="ctrl.onTargetBlur()"
+        data-min-length=0
+        data-items=100
+        data-watchOptions="true"
+        class="gf-form-input"
+        ></input>
+    </div> 
+  </div>
 </query-editor-row>

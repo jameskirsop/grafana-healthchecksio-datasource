@@ -100,7 +100,6 @@ export class GenericDatasourceQueryCtrl extends QueryCtrl {
     }
     this.init()
     this.panelCtrl.refresh();
-    // console.log(this.resultsMode)
   }
 }
 GenericDatasourceQueryCtrl.templateUrl = 'partials/query.editor.html';
