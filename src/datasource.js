@@ -22,13 +22,12 @@ export class GenericDatasource {
     }
     switch (query.targets[0].mode) {
       case 2:
-        var queryUrl = `api/datasources/proxy/${this.id}/checksroute/${query.targets[0].uuid}/flips/`
+        var queryUrl = `api/datasources/proxy/${this.id}/checksroute/${query.targets[0].uuid}/flips/?start=${query.range.from.unix()}&end=${query.range.to.unix()}`
         break;    
       default:
         var queryUrl = `api/datasources/proxy/${this.id}/checksroute/${query.targets[0].uuid}`
         break;
     }
-    console.log('Mode'+query.targets[0].mode)
     return this.customDoRequest({
       url: queryUrl,
       method: 'GET',
