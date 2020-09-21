@@ -1,7 +1,7 @@
 {
   "name": "jameskirsop-healthchecksio-datasource",
   "private": true,
-  "version": "1.0.0",
+  "version": "0.1.0",
   "description": "",
   "main": "index.js",
   "scripts": {
@@ -10,12 +10,12 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/grafana/grafana-healthchecksio-datasource.git"
+    "url": "git+https://github.com/jameskirsop/grafana-healthchecksio-datasource.git"
   },
   "author": "",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/grafana/grafana-healthchecksio-datasource/issues"
+    "url": "https://github.com/jameskirsop/grafana-healthchecksio-datasource/issues"
   },
   "engineStrict": true,
   "devDependencies": {
@@ -42,5 +42,5 @@
   "dependencies": {
     "lodash": "^4.17.4"
   },
-  "homepage": "https://github.com/grafana/grafana-healthchecksio-datasource#readme"
+  "homepage": "https://github.com/jameskirsop/grafana-healthchecksio-datasource#readme"
 }
